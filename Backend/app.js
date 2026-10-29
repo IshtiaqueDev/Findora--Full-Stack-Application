@@ -7,7 +7,8 @@ const session=require("express-session");
 const passport=require("passport");
 const LocalStrategy=require("passport-local");
 const ItemRoute=require("./routes/Items.js");
-const port=8080;
+const cors=require("cors");
+const port=5000;
 
 app.listen(port,(req,res)=>{
     console.log("Server is Listening....");
@@ -15,6 +16,11 @@ app.listen(port,(req,res)=>{
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cors({
+    origin:["http://localhost:5000/","http://localhost:5173"],
+    credentials:true,
+}))
 
 app.use(session({
     secret:"supersecretkeyoflostlinkproject",
@@ -38,5 +44,5 @@ app.use("/user",UserRoute);
 app.use("/item",ItemRoute);
 
 app.use((err,req,res,next)=>{
-    res.status(500).json({err:err.message||"Internal Server Error"})
+    return res.status(500).json({err:err.message||"Internal Server Error"})
 })
