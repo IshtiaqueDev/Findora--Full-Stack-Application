@@ -37,7 +37,7 @@ function App() {
     <Routes>
     <Route path='/' element={<LoginPage/>}/>
     <Route path='/signup' element={<SignupPage/>}/>
-    <Route path="/homepage" element={
+    <Route path="/home" element={
       <ProtectedRoute>
       <HomePage/> 
       </ProtectedRoute>

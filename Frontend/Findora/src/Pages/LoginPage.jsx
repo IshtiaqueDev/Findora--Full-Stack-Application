@@ -1,8 +1,20 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {toast} from "react-toastify"
 import axios from 'axios'
+import {useNavigate} from "react-router-dom"
+import { UserContext } from "../context/UserProvider";
 
 function LoginPage(){
+    const navigate=useNavigate();
+    const {user,setUser}=useContext(UserContext);
+
+    useEffect(() => {
+    if (user) {
+        navigate("/home", { replace: true });
+    }
+}, [user, navigate]);
+
+
     const[formData,setFormData]=useState({
         username:"",
         password:""
@@ -22,8 +34,9 @@ function LoginPage(){
             let response=await axios.post("http://localhost:5000/user/login",formData,{
                 withCredentials:true
             })
-            toast.success("LoggedIn Successfully!");
-            console.log(response);
+            toast.success(response.data.message)
+            setUser(response.data.user);
+            return navigate("/home");
         }catch(err){
               toast.error(
             err.response?.data?.message || err.message

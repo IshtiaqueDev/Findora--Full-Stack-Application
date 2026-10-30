@@ -6,9 +6,9 @@ const {isLoggedIn,isOwner}=require("../middlewares");
 const {matchingAlgo}=require("../Alogirthms");
 
 router.route("/").get(wrapAsync(async(req,res)=>{
-    let Items=await Item.find({});
+    let Items=await Item.find({}).populate("postedBy");
     res.json({
-        Items
+        Items:Items
     })
 }))
 

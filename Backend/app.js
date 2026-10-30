@@ -10,17 +10,15 @@ const ItemRoute=require("./routes/Items.js");
 const cors=require("cors");
 const port=5000;
 
-app.listen(port,(req,res)=>{
-    console.log("Server is Listening....");
-})
+
+app.use(cors({
+    origin:["http://localhost:5000","http://localhost:5173"],
+    credentials:true,
+}))
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.use(cors({
-    origin:["http://localhost:5000/","http://localhost:5173"],
-    credentials:true,
-}))
 
 app.use(session({
     secret:"supersecretkeyoflostlinkproject",
@@ -29,7 +27,7 @@ app.use(session({
     cookie:{
         expires:Date.now()+1000*60*60*24*3,
         maxAge:1000*60*60*24*3,
-        httpsOnly:true
+        httpOnly:true
     }
 }))
 
@@ -45,4 +43,8 @@ app.use("/item",ItemRoute);
 
 app.use((err,req,res,next)=>{
     return res.status(500).json({err:err.message||"Internal Server Error"})
+})
+
+app.listen(port,"0.0.0.0",(req,res)=>{
+    console.log("Server is Listening....");
 })

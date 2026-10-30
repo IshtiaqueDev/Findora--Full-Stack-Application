@@ -10,14 +10,31 @@ const {
 } = require("../middlewares");
 
 
-router.post("/login",
+
+router.post(
+    "/login",
     alreadyLoggedIn,
-    passport.authenticate("local")
-    ,wrapAsync(async(req,res)=>{
-    res.json({
-        message:"LoggedIn Successfully"
-    })
-}))
+    (req, res, next) => {
+        passport.authenticate("local", (err, user, info) => {
+            if (err) return next(err);
+            if (!user) {
+                return res.status(401).json({
+                    message: "Invalid username or password"
+                });
+            }
+            req.login(user, (err) => {
+                if (err) return next(err);
+                return res.json({
+                    message: "LoggedIn Successfully!",
+                    user: req.user
+                });
+            });
+        })(req, res, next);
+    }
+);
+
+
+    
 
 router.get("/",wrapAsync(async(req,res)=>{
     res.json({

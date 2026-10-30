@@ -1,40 +1,22 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
+
+import { useContext } from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import { UserContext } from "../context/UserProvider";
 import Loader from "../components/Loader";
-import { useNavigate } from "react-router-dom";
+import HomePage from "../Pages/HomePage";
 
-function ProtectedRoute(){
-    const navigate=useNavigate();
-    const[userStatus,setUserStatus]=useState(null);
+function ProtectedRoute({children}) {
+    const { user, loading } = useContext(UserContext);
 
-    useEffect(()=>{
-        getUser();
-    },[]);
-
-    const getUser=async function checkUser(){
-        try{   
-            let response=await axios.get("http://localhost:5000/user",{
-                withCredentials:true
-            });
-        setUserStatus(Boolean(response.data.user));
-            
-        }catch(err){
-            setUserStatus(false);
-            return toast.error(err.message);
-        }
+    if (loading) {
+        return <Loader />;
     }
 
-    useEffect(() => {
-    if (userStatus === false) {
-        toast.error("Please Login First");
-        navigate("/");
+    if (!user) {
+        return <Navigate to="/" replace />;
     }
-}, [userStatus, navigate]);
 
-if(userStatus==null) return <Loader/>
-
-    
+    return children;
 }
 
 export default ProtectedRoute;
