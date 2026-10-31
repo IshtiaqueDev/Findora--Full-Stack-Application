@@ -3,6 +3,8 @@ const router=express.Router();
 const wrapAsync=require("../utils/wrapAsync");
 const User=require("../models/User");
 const passport=require("passport");
+const generateOtp=require("../utils/generateOtp");
+const sendOtp=require("../controllers/SendEmail");
 const {
     checkUniversityMail,
     isLoggedIn,
@@ -40,6 +42,51 @@ router.get("/",wrapAsync(async(req,res)=>{
     res.json({
         user:req.user
     })
+}))
+
+
+const otpStore = new Map();
+router.post("/send-otp",wrapAsync(async(req,res)=>{
+    const email=req.body.email;
+    const otp=generateOtp();
+
+     otpStore.set(email, {
+        otp,
+        expiresAt: Date.now() + 1 * 60 * 1000
+    });
+   await sendOtp(email,otp);
+     res.json({
+        message: "OTP sent successfully"
+    });
+
+}));
+
+router.post("/verify-otp",wrapAsync(async(req,res)=>{
+    const otp=req.body.otp;
+    const savedOtp = otpStore.get(email);
+    if (!savedOtp) {
+        return res.status(400).json({
+            message: "OTP not found. Request a new OTP."
+        });
+    }
+
+    if (Date.now() > savedOtp.expiresAt) {
+        otpStore.delete(email);
+        return res.status(400).json({
+            message: "OTP expired."
+        });
+    }
+    if (otp !== savedOtp.otp) {
+        return res.status(400).json({
+            message: "Invalid OTP."
+        });
+    }
+
+    otpStore.delete(email);
+    res.json({
+        status: "success",
+        message: "Email verified successfully."
+    });
 }))
 
 router.post("/signup",

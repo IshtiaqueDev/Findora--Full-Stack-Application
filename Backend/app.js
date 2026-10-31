@@ -1,3 +1,6 @@
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
 const express=require("express");
 const app=express();
 const db=require("./config/db.js");
@@ -7,15 +10,14 @@ const session=require("express-session");
 const passport=require("passport");
 const LocalStrategy=require("passport-local");
 const ItemRoute=require("./routes/Items.js");
+const sendOtpEmail=require("./controllers/SendEmail.js");
 const cors=require("cors");
 const port=5000;
-
 
 app.use(cors({
     origin:["http://localhost:5000","http://localhost:5173"],
     credentials:true,
 }))
-
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

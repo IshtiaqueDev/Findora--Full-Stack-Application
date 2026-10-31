@@ -1,8 +1,13 @@
 import { useContext, useEffect, useState } from "react";
-import {toast} from "react-toastify"
+import { toast } from "react-toastify"
 import axios from 'axios'
-import {useNavigate} from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { UserContext } from "../context/UserProvider";
+
+// NEW: design components (put them next to this file, or fix the import paths)
+import AuthLayout from "./AuthLayout";
+import Field from "./Field";
+import { UserIcon, LockIcon, ArrowIcon } from "./Icons";
 
 function LoginPage(){
     const navigate=useNavigate();
@@ -19,9 +24,10 @@ function LoginPage(){
         username:"",
         password:""
     });
+    const [loading, setLoading] = useState(false); // NEW: disables the button while logging in
 
     const onChange=(e)=>{
-        console.log(e.target.value)
+        // removed console.log(e.target.value): it printed the password in the console
         setFormData((prevData)=>({
             ...prevData,
             [e.target.name]:e.target.value
@@ -30,6 +36,7 @@ function LoginPage(){
 
     const handleSubmit=async(e)=>{
         e.preventDefault();
+        setLoading(true);
         try{
             let response=await axios.post("http://localhost:5000/user/login",formData,{
                 withCredentials:true
@@ -41,21 +48,34 @@ function LoginPage(){
               toast.error(
             err.response?.data?.message || err.message
             );
+        }finally{
+            setLoading(false);
         }
     }
 
     return(
-        <>
-        <h1>Login Page</h1>
-        <form action="" onSubmit={handleSubmit}>
-        <label htmlFor="">Username: </label>
-        <input type="text" name="username" id="" placeholder="Enter Your Username" required value={formData.username} onChange={onChange}/><br /><br />
-        <label htmlFor="">Password: </label>
-        <input type="password" name="password" id="" placeholder="Enter Your Password" required value={formData.password} onChange={onChange}/><br />
-        <button>Submit</button>
-        </form>
-        <p>Not SignedIn?<a href="/signup">SignupHere</a></p>
-        </>
+        <AuthLayout
+            title="Welcome back"
+            subtitle="Sign in to see what's been found around campus."
+            footer={<>Not signed in? <Link className="link" to="/signup">Sign up here</Link></>}
+        >
+            <form onSubmit={handleSubmit}>
+                <Field
+                    id="username" name="username" label="Username" icon={<UserIcon />}
+                    placeholder="Enter your username" autoComplete="username" required
+                    value={formData.username} onChange={onChange}
+                />
+                <Field
+                    id="password" name="password" label="Password" type="password" icon={<LockIcon />}
+                    placeholder="Enter your password" autoComplete="current-password" required
+                    value={formData.password} onChange={onChange}
+                />
+
+                <button className="btn" type="submit" disabled={loading}>
+                    {loading ? "Signing in..." : <>Sign in <ArrowIcon /></>}
+                </button>
+            </form>
+        </AuthLayout>
     )
 }
 
