@@ -9,7 +9,7 @@ const Error=lazy(()=>import("./Pages/Error"));
 const LoginPage=lazy(()=>import("./Pages/LoginPage"));
 const HomePage=lazy(()=>import("./Pages/HomePage"));
 const AdminDashboard=lazy(()=>import("./Pages/AdminDashboard"));
-
+import ExploreReports from "./components/ExploreReports"
 
 function App() {
   const[showLoader,setShowLoader]=useState(
@@ -42,6 +42,16 @@ function App() {
       <HomePage/> 
       </ProtectedRoute>
     }/>
+
+    <Route
+  path="/explore-reports"
+  element={
+    <ProtectedRoute>
+      <ExploreReports />
+    </ProtectedRoute>
+  }
+/>
+
     <Route path='*' element={<Error/>}/>
     </Routes>
     </Suspense>

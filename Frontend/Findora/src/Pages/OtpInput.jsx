@@ -1,65 +1,30 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
-import OtpInput from "./OtpInput";
 
-export default function VerifyEmail() {
-
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    const email = location.state?.email;
-
+export default function OtpInput({
+    length = 6,
+    onChange,
+    disabled = false
+}) {
     const [otp, setOtp] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState("");
 
-    const handleVerify = async () => {
+    const handleChange = (e) => {
+        const value = e.target.value
+            .replace(/\D/g, "")
+            .slice(0, length);
 
-        try {
-            setLoading(true);
-            setMessage("");
-
-            const response = await axios.post(
-                "http://localhost:5000/user/verify-otp",
-                {
-                    email,
-                    otp
-                },
-                {
-                    withCredentials: true
-                }
-            );
-            setMessage(response.data.message);
-            navigate("/");
-        } catch (err) {
-            setMessage(
-                err.response?.data?.message ||
-                "OTP verification failed"
-            );
-        } finally {
-            setLoading(false);
-        }
+        setOtp(value);
+        onChange(value);
     };
 
     return (
-        <div className="verify-container">
-            <h2>Verify Your Email</h2>
-            <p>Enter the OTP sent to {email}</p>
-            <OtpInput
-                length={6}
-                onChange={setOtp}
-                disabled={loading}
-            />
-            <button
-                onClick={handleVerify}
-                disabled={otp.length !== 6 || loading}
-            >
-                {loading ? "Verifying..." : "Verify OTP"}
-            </button>
-
-            <p>{message}</p>
-
-        </div>
+        <input
+            type="text"
+            inputMode="numeric"
+            maxLength={length}
+            value={otp}
+            onChange={handleChange}
+            disabled={disabled}
+            placeholder="Enter OTP"
+        />
     );
 }

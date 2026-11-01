@@ -1,8 +1,7 @@
-const crytpo=require("crypto");
+const crypto = require("crypto");
 
-const generateOtp=()=>{
-     return crypto.randomInt(100000, 1000000).toString();
-}
-
+const generateOtp = () => {
+    return crypto.randomInt(100000, 1000000).toString();
+};
 
 module.exports = generateOtp;

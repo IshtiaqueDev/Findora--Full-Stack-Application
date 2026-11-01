@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     allowedHosts: [
-      'shots-olympics-freeware-domains.trycloudflare.com'
+     "permissions-hits-wheels-asks.trycloudflare.com"
     ]
   }
 })

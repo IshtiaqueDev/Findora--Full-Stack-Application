@@ -4,7 +4,7 @@ const wrapAsync=require("../utils/wrapAsync");
 const User=require("../models/User");
 const passport=require("passport");
 const generateOtp=require("../utils/generateOtp");
-const sendOtp=require("../controllers/SendEmail");
+const { sendOtpEmail } = require("../controllers/SendEmail");
 const {
     checkUniversityMail,
     isLoggedIn,
@@ -46,48 +46,65 @@ router.get("/",wrapAsync(async(req,res)=>{
 
 
 const otpStore = new Map();
-router.post("/send-otp",wrapAsync(async(req,res)=>{
-    const email=req.body.email;
-    const otp=generateOtp();
+router.post("/send-otp", async (req, res) => {
+    try {
+        const email = req.body.email.trim().toLowerCase();
+        const user=await User.findOne({email:email});
+        if(user){
+             throw new Error("Email is already registered.");
+        }
+        const otp = generateOtp();
 
-     otpStore.set(email, {
-        otp,
-        expiresAt: Date.now() + 1 * 60 * 1000
-    });
-   await sendOtp(email,otp);
-     res.json({
-        message: "OTP sent successfully"
-    });
+        otpStore.set(email, {
+            otp,
+            expiresAt: Date.now() + 60 * 1000
+        });
 
-}));
+        await sendOtpEmail(email, otp);
 
-router.post("/verify-otp",wrapAsync(async(req,res)=>{
-    const otp=req.body.otp;
-    const savedOtp = otpStore.get(email);
-    if (!savedOtp) {
-        return res.status(400).json({
-            message: "OTP not found. Request a new OTP."
+        res.json({
+            message: "OTP sent successfully"
+        });
+
+    } catch (err) {
+        console.error("SEND OTP ERROR:", err);
+
+        res.status(500).json({
+            message: err.message
         });
     }
+});
 
-    if (Date.now() > savedOtp.expiresAt) {
+router.post("/verify-otp", wrapAsync(async (req, res) => {
+    const email = req.body.email.trim().toLowerCase();
+    const { otp } = req.body;
+    const storedData = otpStore.get(email);
+    if (!storedData) {
+        return res.status(400).json({
+            status: "error",
+            message: "OTP not found. Please request a new code."
+        });
+    }
+    if (Date.now() > storedData.expiresAt) {
         otpStore.delete(email);
+
         return res.status(400).json({
-            message: "OTP expired."
+            status: "error",
+            message: "OTP expired. Please request a new code."
         });
     }
-    if (otp !== savedOtp.otp) {
+    if (storedData.otp !== otp) {
         return res.status(400).json({
+            status: "error",
             message: "Invalid OTP."
         });
     }
-
     otpStore.delete(email);
     res.json({
         status: "success",
         message: "Email verified successfully."
     });
-}))
+}));
 
 router.post("/signup",
     alreadyLoggedIn
@@ -101,7 +118,12 @@ router.post("/signup",
     req.login(user,(err)=>{
         if(err)return next(err);
     res.json({
-        message:"Signup Successfully"
+        message:"Signup Successfully",
+        user:{
+            _id:req.user._id,
+            username:req.user.username,
+            email:req.user.email
+        }
     })})
 }))
 

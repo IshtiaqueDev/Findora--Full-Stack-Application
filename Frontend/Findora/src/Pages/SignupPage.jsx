@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
-
+import { UserContext } from "../context/UserProvider";
 import AuthLayout from "./AuthLayout";
 import Field from "./Field";
 import OtpInput from "./OtpInput";
@@ -10,22 +10,22 @@ import { UserIcon, MailIcon, LockIcon, ArrowIcon } from "./Icons";
 
 // true  = fake OTP in the browser (the code shows in a toast), so you can test the design now.
 // false = calls your backend routes below. Set it to false once those routes exist.
-const DEMO_MODE = true;
-
 const API = "http://localhost:5000/user";
 const KHP_EMAIL = /^[^\s@]*khp@iba-suk\.edu\.pk$/i; // must end with khp@iba-suk.edu.pk
-const RESEND_SECONDS = 30;
+const RESEND_SECONDS = 60;
 const mmss = (s) => `0:${String(s).padStart(2, "0")}`;
 let demoCode = "";
 
-function SignupPage(){
-    const navigate=useNavigate();
+function SignupPage() {
+    console.count("SignupPage rendered");
+    const navigate = useNavigate();
+    const{setUser}=useContext(UserContext);
 
-    const[formData,setFormData]=useState({
-        username:"",
-        email:"",
-        password:"",
-    })
+    const [formData, setFormData] = useState({
+        username: "",
+        email: "",
+        password: "",
+    });
     const [confirm, setConfirm] = useState("");
     const [agree, setAgree] = useState(false);
     const [errors, setErrors] = useState({});
@@ -39,7 +39,7 @@ function SignupPage(){
     const [sending, setSending] = useState(false);
     const [secondsLeft, setSecondsLeft] = useState(0);
 
-    // 30 second countdown
+    // 60 second resend countdown
     useEffect(() => {
         if (secondsLeft <= 0) return;
         const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
@@ -48,12 +48,12 @@ function SignupPage(){
 
     const emailValid = KHP_EMAIL.test(formData.email.trim());
 
-    const onChange=(e)=>{
-        setFormData((prevData)=>({
+    const onChange = (e) => {
+        setFormData((prevData) => ({
             ...prevData,
-            [e.target.name]:e.target.value
-        }))
-    }
+            [e.target.name]: e.target.value,
+        }));
+    };
 
     const resetOtp = () => {
         setOtpSentTo("");
@@ -68,29 +68,53 @@ function SignupPage(){
         if (otpSentTo && value.trim() !== otpSentTo) resetOtp(); // email changed, start over
     };
 
+    // 1) User clicks "Send OTP" / "Resend OTP"
     const sendCode = async () => {
-        const email = formData.email.trim();
-        setSending(true);
-        setOtpError("");
-        setErrors((er) => ({ ...er, otp: undefined }));
-        try {
-            const res = await axios.post(`${API}/user/send-otp`, { email });
-            toast.success(res.data.message || "Code sent to your email");
-            setVerified(false);
-            setSecondsLeft(RESEND_SECONDS);
-        } catch (err) {
-            toast.error(err.response?.data?.message || err.message);
-        } finally {
-            setSending(false);
-        }
-    };
+    const email = formData.email.trim();
 
+    setSending(true);
+    setOtpError("");
+
+    try {
+        console.log("Sending OTP request...");
+        const res = await axios.post(
+            `${API}/send-otp`,
+            { email },
+            {
+                withCredentials: true,
+                timeout: 20000
+            }
+        );
+        console.log("OTP response:", res.data);
+        toast.success(res.data.message);
+        setOtpSentTo(email);
+        setOtpRound(r => r + 1);
+        setVerified(false);
+        setSecondsLeft(RESEND_SECONDS);
+    } catch (err) {
+        console.error("OTP ERROR:", err);
+        toast.error(
+            err.response?.data?.message ||
+            err.message ||
+            "Failed to send OTP"
+        );
+    } finally {
+        console.log("Request completed");
+        setSending(false);
+    }
+};
     const checkCode = async (code) => {
         if (code.length < 6) return;
+        setOtpError("");
         try {
-            await axios.post(`${API}/verify-otp`, { email: otpSentTo, otp: code });
-            setVerified(true);
-            setSecondsLeft(0);
+            const res = await axios.post(`${API}/verify-otp`, { email: otpSentTo, otp: code });
+            if (res.data.status == "success") {
+                setVerified(true);
+                setSecondsLeft(0);
+                
+            } else {
+                setOtpError(res.data.message || "That code is incorrect. Try again.");
+            }
         } catch (err) {
             setOtpError(err.response?.data?.message || "That code is incorrect. Try again.");
         }
@@ -98,7 +122,9 @@ function SignupPage(){
 
     const validate = () => {
         const e = {};
-        if (!/^[a-zA-Z0-9_.]{3,20}$/.test(formData.username)) e.username = "3 to 20 letters, numbers, _ or .";
+       if (formData.username.length < 3) {
+        e.username = "Username must contain at least 3 characters.";
+        }
         if (!emailValid) e.email = "Use your campus email ending in khp@iba-suk.edu.pk.";
         else if (!verified) e.otp = "Send a code to your email and enter it.";
         if (formData.password.length < 8) e.password = "Use at least 8 characters.";
@@ -107,28 +133,34 @@ function SignupPage(){
         return e;
     };
 
-    const handleSubmit=async(e)=>{
+    // 3) User clicks "Create account"
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const found = validate();
         setErrors(found);
         if (Object.keys(found).length) return;
 
         setLoading(true);
-        try{
-            if (DEMO_MODE) {
-                await new Promise((r) => setTimeout(r, 800));
-                toast.success("Demo: account would be created now");
-            } else {
-                const response = await axios.post(`${API}/signup`, formData, { withCredentials: true });
-                toast.success(response.data.message);
-                navigate("/");
-            }
-        }catch(err){
+        await signup();
+    };
+
+    // 4) Backend signup, then redirect to homepage on success
+    const signup = async () => {
+        try {
+            const response = await axios.post(
+                `${API}/signup`,
+                { ...formData, email: formData.email.trim() },
+                { withCredentials: true }
+            );
+            toast.success(response.data.message || "Account created");
+            setUser(response.data.user);
+            navigate("/home"); // redirect to homepage
+        } catch (err) {
             toast.error(err.response?.data?.message || err.message);
-        }finally{
+        } finally {
             setLoading(false);
         }
-    }
+    };
 
     const sendLabel = sending
         ? "Sending..."
@@ -147,7 +179,7 @@ function SignupPage(){
 
     const otpMessage = otpError || errors.otp;
 
-    return(
+    return (
         <AuthLayout
             title="Create your account"
             subtitle="Join Findora and make campus life a little easier."
@@ -212,7 +244,7 @@ function SignupPage(){
                 </button>
             </form>
         </AuthLayout>
-    )
+    );
 }
 
 export default SignupPage;
