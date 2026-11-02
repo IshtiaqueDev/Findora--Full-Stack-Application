@@ -50,7 +50,8 @@ body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, sans-serif; color
 
 .hero__foot { font-size: 11px; color: var(--muted); display: flex; gap: 6px; align-items: center; justify-content: center; }
 
-/* ---------- Card ---------- */.auth__main { display: grid; place-items: center; padding-bottom: 6vh; }
+/* ---------- Card ---------- */
+.auth__main { display: grid; place-items: center; padding-bottom: 6vh; }
 .card {
   width: 100%;
   max-width: 480px;
@@ -76,10 +77,36 @@ body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, sans-serif; color
 }
 .field__box:focus-within { border-color: var(--purple); box-shadow: 0 0 0 4px rgba(124,92,230,.12); }
 .field--error .field__box { border-color: var(--danger); }
-.field input {
-  flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
-  font: inherit; font-size: 16px; /* 16px stops iOS zoom on focus */ color: var(--ink);
+
+/* The input draws nothing: only .field__box draws the border and glow */
+.field .field__box input,
+.field .field__box input:focus,
+.field .field__box input:focus-visible,
+.field .field__box input:hover {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  font: inherit;
+  font-size: 16px; /* 16px stops iOS zoom on focus */
+  color: var(--ink);
 }
+
+/* Stop Chrome autofill from painting its own box */
+.field .field__box input:-webkit-autofill,
+.field .field__box input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--field) inset;
+  -webkit-text-fill-color: var(--ink);
+  transition: background-color 9999s ease-out 0s;
+}
+
 .field input::placeholder { color: #a8a3bb; }
 .field__toggle { border: 0; background: none; padding: 4px; cursor: pointer; color: var(--muted); display: grid; }
 .field__error { color: var(--danger); font-size: 11.5px; margin: 5px 2px 0; }
@@ -134,6 +161,3 @@ body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, sans-serif; color
   .card { border-radius: 22px; padding: 20px 16px; }
   .card__title { font-size: 23px; }
 }
-
-
-

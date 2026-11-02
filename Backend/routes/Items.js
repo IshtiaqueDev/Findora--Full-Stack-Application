@@ -4,6 +4,8 @@ const Item=require("../models/Item");
 const wrapAsync=require("../utils/wrapAsync")
 const {isLoggedIn,isOwner}=require("../middlewares");
 const {matchingAlgo}=require("../Alogirthms");
+const {cloudConfig}=require("../cloudConfig");
+// const upload=cloudConfig.upload;
 
 router.route("/").get(wrapAsync(async(req,res)=>{
     let Items=await Item.find({}).populate("postedBy");

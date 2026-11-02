@@ -1,0 +1,150 @@
+/* ---------- Big box that holds everything ---------- */
+.items-box {
+    width: 100%;
+    max-width: 1300px;
+    margin: 30px auto;
+    padding: 28px;
+    background: #fff;
+    border: 1px solid #e9e6f2;
+    border-radius: 28px;
+    box-shadow: 0 10px 40px rgba(60, 40, 120, 0.06);
+    box-sizing: border-box;
+}
+
+/* ---------- 4 cards per row ---------- */
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.items-empty {
+    text-align: center;
+    color: #7d7893;
+    padding: 40px 0;
+    margin: 0;
+}
+
+/* ---------- Card ---------- */
+.item-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #e9e6f2;
+    border-top: 4px solid #7c5ce6;      /* status colour is always visible */
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.item-card.lost  { border-top-color: #ef4444; }
+.item-card.found { border-top-color: #22c55e; }
+
+/* Hover: small lift, soft purple glow, no layout jump */
+.item-card:hover {
+    transform: translateY(-4px);
+    border-color: #7c5ce6;
+    box-shadow: 0 12px 28px rgba(124, 92, 230, 0.18);
+}
+.item-card.lost:hover  { border-top-color: #ef4444; }
+.item-card.found:hover { border-top-color: #22c55e; }
+
+.item-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background: #faf9fd;
+    border-bottom: 1px solid #eee;
+}
+
+/* Lost / Found badge: always displayed */
+.item-status {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.item-status.lost  { background: #fee2e2; color: #b91c1c; }
+.item-status.found { background: #dcfce7; color: #15803d; }
+
+.item-category {
+    font-size: 12px;
+    color: #7d7893;
+}
+
+.item-card-body {
+    flex: 1;                 /* pushes the footer to the bottom so cards align */
+    padding: 16px;
+}
+
+.item-card-body h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #26213f;
+}
+
+.item-description {
+    margin: 0 0 14px;
+    color: #7d7893;
+    font-size: 13px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;       /* keep cards the same height */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.item-meta {
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+.item-meta p {
+    margin: 0 0 6px;
+    font-size: 12.5px;
+    color: #475569;
+}
+
+.item-card-footer {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid #eee;
+}
+
+.view-btn,
+.delete-btn {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    transition: background 0.15s;
+}
+
+.view-btn { background: #7c5ce6; color: #fff; }
+.view-btn:hover { background: #6847d6; }
+
+.delete-btn { background: #fee2e2; color: #dc2626; }
+.delete-btn:hover { background: #fecaca; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+    .items-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 820px) {
+    .items-box { padding: 18px; border-radius: 22px; }
+    .items-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+}
+@media (max-width: 520px) {
+    .items-grid { grid-template-columns: 1fr; }
+}

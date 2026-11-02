@@ -1,4 +1,6 @@
 import { createContext, useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export const UserContext = createContext();
@@ -6,6 +8,7 @@ export const UserContext = createContext();
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const navigate=useNavigate();
 
     const getUser = async () => {
         try {
@@ -13,9 +16,6 @@ export const UserProvider = ({ children }) => {
                 "http://localhost:5000/user",
                 { withCredentials: true }
             );
-
-            console.log("API DATA:", response.data.user);
-
             setUser(response.data.user);
 
         } catch (err) {
@@ -34,9 +34,25 @@ export const UserProvider = ({ children }) => {
         console.log("STATE UPDATED:", user);
     }, [user]);
 
+
+
+     const handleLogout=async()=>{
+        try{
+        let response=await axios.get("http://localhost:5000/user/logout",{
+            withCredentials:true
+        })  
+        setUser(null);
+        toast.success(response.data.message);
+        navigate("/",{replace:true});
+
+        }catch(err){
+            return toast.error(err.message);
+        }
+    }
+
     return (
         <UserContext.Provider
-            value={{ user, setUser, getUser, loading }}
+            value={{ user, setUser, getUser, loading ,handleLogout}}
         >
             {children}
         </UserContext.Provider>

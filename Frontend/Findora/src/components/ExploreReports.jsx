@@ -1,4 +1,4 @@
-import Navbar from "./Navbar";
+import Items from "./Items";
 
 function ExploreReports(){
     return(
@@ -97,46 +97,12 @@ function ExploreReports(){
         </button>
       </div>
     </div>
-    {/* RESULTS HEADING */}
-    <div className="results-heading">
-      <div>
-        <h3>Campus item reports</h3>
-        <p>Browse the latest lost and found items.</p>
-      </div>
-      <select
-        id="sort-reports"
-        className="sort-select"
-        aria-label="Sort reports"
-      >
-        <option value="newest">Newest first</option>
-        <option value="oldest">Oldest first</option>
-        <option value="az">Name: A to Z</option>
-      </select>
-    </div>
-    {/* REPORT CARDS */}
-    <div className="reports-grid" id="reports-grid">
-      {/* JavaScript renders reports here */}
-    </div>
-    <div className="empty-state" id="empty-state" hidden="">
-      <span>🔎</span>
-      <h3>No matching reports found</h3>
-      <p>Try changing your search or resetting the filters.</p>
-      <button type="button" id="empty-reset" className="secondary-button">
-        Reset search
-      </button>
-    </div>
   </section>
-  {/* BOTTOM MESSAGE */}
-  <section className="bottom-banner">
-    <span>💜</span>
-    <div>
-      <h3>Be someone's reason to smile.</h3>
-      <p>
-        If you find something, reporting it could reunite someone with something
-        important.
-      </p>
-    </div>
-  </section>
+
+  <section className="items-section">
+    <Items/>
+</section>
+
 </>
 
     )

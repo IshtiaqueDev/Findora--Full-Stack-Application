@@ -2,7 +2,7 @@ import {Routes,Route} from 'react-router-dom'
 import './App.css'
 import Loader from './components/Loader'
 import { ToastContainer,Bounce } from 'react-toastify'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useContext, useEffect, useState } from 'react'
 import ProtectedRoute from './utils/ProtectedRoute'
 const SignupPage=lazy(()=>import('./Pages/SignupPage'));
 const Error=lazy(()=>import("./Pages/Error"));
@@ -10,12 +10,16 @@ const LoginPage=lazy(()=>import("./Pages/LoginPage"));
 const HomePage=lazy(()=>import("./Pages/HomePage"));
 const AdminDashboard=lazy(()=>import("./Pages/AdminDashboard"));
 import ExploreReports from "./components/ExploreReports"
+import { UserContext } from './context/UserProvider'
+import Navbar from './components/Navbar'
 
 function App() {
   const[showLoader,setShowLoader]=useState(
     !sessionStorage.getItem("findoraLoaded")
   );
-  
+
+  const{user,handleLogout}=useContext(UserContext);
+
   useEffect(()=>{
     if(!showLoader) return;
     const timer=setTimeout(()=>{
@@ -32,7 +36,7 @@ function App() {
 
   return (
     <>
-
+    {user&&<Navbar user={user} onLogout={handleLogout}/>}
     <Suspense fallback={<Loader/>}>
     <Routes>
     <Route path='/' element={<LoginPage/>}/>

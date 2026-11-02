@@ -5,7 +5,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     allowedHosts: [
-     "permissions-hits-wheels-asks.trycloudflare.com"
     ]
   }
 })
