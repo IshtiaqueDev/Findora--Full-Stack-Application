@@ -8,8 +8,6 @@ const wrapAsync = require("../utils/wrapAsync");
 const { isLoggedIn, isOwner } = require("../middlewares");
 const { MATCH_THRESHOLD, matchingAlgo } = require("../Alogirthms");
 const { sendMatchFoundEmail, sendClaimEmail } = require("../controllers/SendEmail");
-// const { upload } = require("../cloudConfig");
-// const cloudinary = require("cloudinary").v2;
 
 const isValidId = (id) => mongoose.isValidObjectId(id);
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
@@ -114,13 +112,6 @@ router.route("/")
         );
 
         if (isDuplicate) {
-        //     if (req.file?.filename) {
-        //         try {
-        //             await cloudinary.uploader.destroy(req.file.filename);
-        //         } catch (error) {
-        //             console.error("DUPLICATE_REPORT_IMAGE_CLEANUP_FAILED:", error.code || "CLOUDINARY_ERROR");
-        //         }
-        //     }
              return res.status(409).json({
                 message: "You have already posted this item for this date."
             });

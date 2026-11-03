@@ -71,7 +71,7 @@ app.use((err,req,res,next)=>{
                 ? "The image is too large to upload."
                 : "The uploaded file could not be processed."
             : status >= 500
-                ? "The image upload failed. Check the backend Cloudinary configuration and server logs."
+                ? "Something went wrong while processing the request."
                 : err.message
     });
 })
