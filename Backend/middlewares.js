@@ -1,4 +1,5 @@
 const Item = require("./models/Item");
+const mongoose = require("mongoose");
 
 const checkUniversityMail=(req,res,next)=>{
     let {email}=req.body;
@@ -14,7 +15,7 @@ const checkUniversityMail=(req,res,next)=>{
 
 const isLoggedIn=(req,res,next)=>{
     if(!req.isAuthenticated()){
-       return res.json({
+       return res.status(401).json({
             message:"You are not LoggedIn"
         })
     }
@@ -24,11 +25,15 @@ const isLoggedIn=(req,res,next)=>{
 
 const isOwner=async(req,res,next)=>{
     const {id}=req.params;
-    console.log("Reached in the middleware");
-    let item=await Item.findOne({_id:id});
-    console.log(item);
+    if(!mongoose.isValidObjectId(id)){
+        return res.status(400).json({message:"Invalid item ID"});
+    }
+    let item=await Item.findById(id);
+    if(!item){
+        return res.status(404).json({message:"Item not found"});
+    }
     if(!req.user._id.equals(item.postedBy)){
-        return res.json({
+        return res.status(403).json({
             message:"You are not the owner"
         })
      }

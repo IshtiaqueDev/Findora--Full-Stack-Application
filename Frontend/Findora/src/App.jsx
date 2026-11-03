@@ -9,6 +9,9 @@ const Error=lazy(()=>import("./Pages/Error"));
 const LoginPage=lazy(()=>import("./Pages/LoginPage"));
 const HomePage=lazy(()=>import("./Pages/HomePage"));
 const AdminDashboard=lazy(()=>import("./Pages/AdminDashboard"));
+const FoundItems=lazy(()=>import("./Pages/FoundItems"));
+const MyReports=lazy(()=>import("./Pages/MyReports"));
+const ItemDetails=lazy(()=>import("./Pages/ItemDetails"));
 import ExploreReports from "./components/ExploreReports"
 import { UserContext } from './context/UserProvider'
 import Navbar from './components/Navbar'
@@ -55,6 +58,24 @@ function App() {
     </ProtectedRoute>
   }
 />
+
+    <Route path="/found" element={
+      <ProtectedRoute>
+        <FoundItems/>
+      </ProtectedRoute>
+    }/>
+
+    <Route path="/my-reports" element={
+      <ProtectedRoute>
+        <MyReports/>
+      </ProtectedRoute>
+    }/>
+
+    <Route path="/items/:id" element={
+      <ProtectedRoute>
+        <ItemDetails/>
+      </ProtectedRoute>
+    }/>
 
     <Route path='*' element={<Error/>}/>
     </Routes>

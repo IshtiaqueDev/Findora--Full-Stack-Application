@@ -4,8 +4,8 @@ import {toast} from "react-toastify"
 import axios from "axios"
 
 function ReportForm() {
-    const [formData, setFormData] = useState({
-        type: "",
+    const initialFormData = {
+        type: "Lost",
         name: "",
         category: "",
         color: "",
@@ -13,7 +13,8 @@ function ReportForm() {
         date: "",
         time: "",
         description: ""
-    });
+    };
+    const [formData, setFormData] = useState(initialFormData);
 
     const [photo, setPhoto] = useState(null);
     const [photoPreview, setPhotoPreview] = useState(null);
@@ -52,12 +53,14 @@ function ReportForm() {
             return;
         }
 
+        if (photoPreview) URL.revokeObjectURL(photoPreview);
         setPhoto(file);
         setPhotoPreview(URL.createObjectURL(file));
     };
 
     // Remove selected photo
     const removePhoto = () => {
+        if (photoPreview) URL.revokeObjectURL(photoPreview);
         setPhoto(null);
         setPhotoPreview(null);
 
@@ -76,35 +79,23 @@ function ReportForm() {
         if (photo) {
             data.append("photo", photo);
         }
-        console.log("Form Data:", Object.fromEntries(
-            Object.entries(formData)
-        ));
-        console.log("Selected Photo:", photo);
-
-        // Send data to your backend here using Axios
-
-    try {
-        const data = new FormData();
-        Object.entries(formData).forEach(([key, value]) => {
-            data.append(key, value);
-        });
-        if (photo) {
-            data.append("photo", photo);
+        try {
+            const response = await axios.post(
+                "http://localhost:5000/item",
+                data,
+                { withCredentials: true }
+            );
+            toast.success(response.data.message);
+            if (photoPreview) URL.revokeObjectURL(photoPreview);
+            setFormData(initialFormData);
+            setPhoto(null);
+            setPhotoPreview(null);
+            const photoInput = document.getElementById("item-photo");
+            if (photoInput) photoInput.value = "";
+            window.dispatchEvent(new Event("findora:reports-changed"));
+        } catch (error) {
+            toast.error(error.response?.data?.message || error.message);
         }
-        const response = await axios.post(
-            "http://localhost:5000/item",
-            data,
-            {
-                withCredentials: true
-            }
-        );
-        toast.success(response.data.message);
-        console.log(response.data)
-    } catch (error) {
-        console.log(error.response?.data || error.message);
-        toast.error(error.message?.data);
-    }
-      
     };
 
     return (

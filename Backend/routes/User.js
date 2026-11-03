@@ -11,6 +11,11 @@ const {
     alreadyLoggedIn
 } = require("../middlewares");
 
+const publicUser = (user) => ({
+    _id: user._id,
+    username: user.username,
+    email: user.email
+});
 
 
 router.post(
@@ -28,7 +33,7 @@ router.post(
                 if (err) return next(err);
                 return res.json({
                     message: "LoggedIn Successfully!",
-                    user: req.user
+                    user: publicUser(req.user)
                 });
             });
         })(req, res, next);
@@ -40,7 +45,7 @@ router.post(
 
 router.get("/",wrapAsync(async(req,res)=>{
     res.json({
-        user:req.user
+        user:req.isAuthenticated() ? publicUser(req.user) : null
     })
 }))
 
@@ -67,10 +72,12 @@ router.post("/send-otp", async (req, res) => {
         });
 
     } catch (err) {
-        console.error("SEND OTP ERROR:", err);
+        console.error("SEND_OTP_EMAIL_FAILED:", err.code || "EMAIL_ERROR");
 
         res.status(500).json({
-            message: err.message
+            message: err.message === "Email is already registered."
+                ? err.message
+                : "Unable to send verification email"
         });
     }
 });

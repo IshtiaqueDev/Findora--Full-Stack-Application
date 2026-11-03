@@ -222,9 +222,19 @@ Example:
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
 SESSION_SECRET=your_secure_session_secret
+FRONTEND_URL=http://localhost:5173
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your_sending_email
+SMTP_PASSWORD=your_email_app_password
+SMTP_FROM=Findora <your_sending_email>
+CLOUD_NAME=your_cloudinary_cloud_name
+CLOUD_API_KEY=your_cloudinary_api_key
+CLOUD_API_SECRET=your_cloudinary_api_secret
 ```
 
-Use only the variables your backend actually requires. Never commit real credentials, database passwords, or session secrets.
+The backend uses SMTP for verification, match, and claim emails. For Gmail, use an app password. `SMTP_FROM` is optional, and the existing `USEREMAIL`/`PASSWORD` variables remain supported as SMTP credential aliases. Keep all credentials in `Backend/.env`; never commit real credentials, database passwords, or session secrets.
 
 Start the backend using the script configured in `Backend/package.json`. For example:
 

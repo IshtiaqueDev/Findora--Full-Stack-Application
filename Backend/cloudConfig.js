@@ -21,13 +21,16 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
-    if (file.fieldname === "image") {
+    if (file.fieldname === "photo") {
       return {
-        folder: "FindoraItems/Images",
+        folder: "testfolder",
         allowed_formats: ["jpg", "jpeg", "png", "webp"],
         resource_type: "image"
       };
-    }}});
+    }
+    throw new Error("Unsupported image field");
+  }
+});
 
 
 const upload = multer({ storage,

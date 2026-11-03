@@ -1,6 +1,38 @@
+import { useCallback, useState } from "react";
 import Items from "./Items";
 
 function ExploreReports(){
+    const [filters, setFilters] = useState({
+      search: "",
+      type: "All",
+      category: "All",
+      color: "All",
+      location: "All"
+    });
+    const [resultsCount, setResultsCount] = useState(0);
+    const updateFilter = (event) => {
+      const { id, value } = event.target;
+      const key = {
+        "search-input": "search",
+        "filter-type": "type",
+        "filter-category": "category",
+        "filter-color": "color",
+        "filter-location": "location"
+      }[id];
+      if (key) setFilters((previous) => ({ ...previous, [key]: value }));
+    };
+    const resetFilters = () => setFilters({
+      search: "",
+      type: "All",
+      category: "All",
+      color: "All",
+      location: "All"
+    });
+    const updateResultsCount = useCallback((count) => setResultsCount(count), []);
+    const hasFilters = Object.entries(filters).some(([key, value]) =>
+      key === "search" ? Boolean(value.trim()) : value !== "All"
+    );
+
     return(
         <>
   {/* DISCOVER REPORTS */}
@@ -29,8 +61,10 @@ function ExploreReports(){
           id="search-input"
           placeholder="Try “black backpack” or “library”..."
           aria-label="Search reports"
+          value={filters.search}
+          onChange={updateFilter}
         />
-        <button type="button" id="clear-search" className="clear-search">
+        <button type="button" id="clear-search" className="clear-search" onClick={() => setFilters((previous) => ({ ...previous, search: "" }))}>
           Clear
         </button>
       </div>
@@ -38,7 +72,7 @@ function ExploreReports(){
       <div className="filters-grid">
         <div className="filter-field">
           <label htmlFor="filter-type">Report type</label>
-          <select id="filter-type">
+          <select id="filter-type" value={filters.type} onChange={updateFilter}>
             <option value="All">All reports</option>
             <option value="Lost">Lost items</option>
             <option value="Found">Found items</option>
@@ -46,7 +80,7 @@ function ExploreReports(){
         </div>
         <div className="filter-field">
           <label htmlFor="filter-category">Category</label>
-          <select id="filter-category">
+          <select id="filter-category" value={filters.category} onChange={updateFilter}>
             <option value="All">All categories</option>
             <option>Bags &amp; Accessories</option>
             <option>Electronics</option>
@@ -60,7 +94,7 @@ function ExploreReports(){
         </div>
         <div className="filter-field">
           <label htmlFor="filter-color">Colour</label>
-          <select id="filter-color">
+          <select id="filter-color" value={filters.color} onChange={updateFilter}>
             <option value="All">All colours</option>
             <option>Black</option>
             <option>White</option>
@@ -74,7 +108,7 @@ function ExploreReports(){
         </div>
         <div className="filter-field">
           <label htmlFor="filter-location">Location</label>
-          <select id="filter-location">
+          <select id="filter-location" value={filters.location} onChange={updateFilter}>
             <option value="All">All locations</option>
             <option>Academic Block</option>
             <option>Library</option>
@@ -90,9 +124,9 @@ function ExploreReports(){
       </div>
       <div className="filter-bottom">
         <span id="results-count" aria-live="polite">
-          Showing all reports
+          {hasFilters ? `Showing ${resultsCount} matching reports` : `Showing ${resultsCount} reports`}
         </span>
-        <button type="button" id="reset-filters" className="reset-button">
+        <button type="button" id="reset-filters" className="reset-button" onClick={resetFilters}>
           ↺ Reset filters
         </button>
       </div>
@@ -100,7 +134,7 @@ function ExploreReports(){
   </section>
 
   <section className="items-section">
-    <Items/>
+    <Items filters={filters} onResultsChange={updateResultsCount}/>
 </section>
 
 </>
