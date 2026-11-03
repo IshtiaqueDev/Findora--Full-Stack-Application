@@ -1,10 +1,12 @@
 import { useState } from "react";
 import "./ReportForm.css"
+import {toast} from "react-toastify"
+import axios from "axios"
 
 function ReportForm() {
     const [formData, setFormData] = useState({
         type: "",
-        itemName: "",
+        name: "",
         category: "",
         color: "",
         location: "",
@@ -67,28 +69,46 @@ function ReportForm() {
     // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         const data = new FormData();
-
         Object.entries(formData).forEach(([key, value]) => {
             data.append(key, value);
         });
-
         if (photo) {
             data.append("photo", photo);
         }
-
         console.log("Form Data:", Object.fromEntries(
             Object.entries(formData)
         ));
-
         console.log("Selected Photo:", photo);
 
         // Send data to your backend here using Axios
+
+    try {
+        const data = new FormData();
+        Object.entries(formData).forEach(([key, value]) => {
+            data.append(key, value);
+        });
+        if (photo) {
+            data.append("photo", photo);
+        }
+        const response = await axios.post(
+            "http://localhost:5000/item",
+            data,
+            {
+                withCredentials: true
+            }
+        );
+        toast.success(response.data.message);
+        console.log(response.data)
+    } catch (error) {
+        console.log(error.response?.data || error.message);
+        toast.error(error.message?.data);
+    }
+      
     };
 
     return (
-        <form id="report-form" onSubmit={handleSubmit}>
+        <form id="report-form" onSubmit={handleSubmit} >
 
             <input
                 type="hidden"
@@ -127,12 +147,12 @@ function ReportForm() {
 
                     <input
                         id="item-name"
-                        name="itemName"
+                        name="name"
                         type="text"
                         placeholder="e.g. Black backpack"
                         maxLength={80}
                         required
-                        value={formData.itemName}
+                        value={formData.name}
                         onChange={handleChange}
                     />
                 </div>

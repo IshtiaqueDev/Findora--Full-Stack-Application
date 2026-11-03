@@ -24,10 +24,8 @@ let itemSchema=new mongoose.Schema({
             values:["lost", "found"],
             message:"Invalid Response"
         }
-    },craetedAt:{
-        type:String,
-        required:true
-    },status:{
+    },
+    status:{
         type:String,
         required:true,
         default:"active",
@@ -39,10 +37,10 @@ let itemSchema=new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
         required:true
-    },image:[{
+    },imageUrl:{
         type:String,
         required:true
-    }]
+    }
 })
 
 

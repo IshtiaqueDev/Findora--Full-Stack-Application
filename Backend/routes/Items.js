@@ -4,8 +4,7 @@ const Item=require("../models/Item");
 const wrapAsync=require("../utils/wrapAsync")
 const {isLoggedIn,isOwner}=require("../middlewares");
 const {matchingAlgo}=require("../Alogirthms");
-const {cloudConfig}=require("../cloudConfig");
-// const upload=cloudConfig.upload;
+const {upload}=require("../cloudConfig");
 
 router.route("/").get(wrapAsync(async(req,res)=>{
     let Items=await Item.find({}).populate("postedBy");
@@ -15,11 +14,14 @@ router.route("/").get(wrapAsync(async(req,res)=>{
 }))
 
 
-.post(isLoggedIn,wrapAsync(async(req,res)=>{
-    let itemData=req.body;
-    itemData.postedBy=req.user._id;
-   await Item.insertOne(itemData);
-   res.json({
+.post(isLoggedIn,upload.single("photo"),wrapAsync(async(req,res)=>{
+    let formData=req.body;
+    console.log(formData);
+     formData.imageUrl=req.file.path;
+     itemData.postedBy=req.user._id;
+     console.log(req.file.path);
+    await Item.insertOne(itemData);
+    res.json({
     message:"Posted Successfully"
    })
 }));   
