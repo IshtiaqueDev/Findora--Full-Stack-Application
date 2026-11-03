@@ -21,7 +21,7 @@ app.use(cors({
         const isAllowedOrigin = !origin ||
             origin === "http://localhost:5000" ||
             origin === "http://localhost:5173" ||
-            origin==="https://book-palace-full-stack-mern-applica.vercel.app"||
+            origin==="https://findora-full-stack-application.vercel.app"||
             origin === configuredFrontendUrl ||
             isLocalDevelopmentOrigin;
 
