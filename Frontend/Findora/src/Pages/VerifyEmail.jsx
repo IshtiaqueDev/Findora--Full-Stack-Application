@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import OtpInput from "./OtpInput";
+import { API_URL } from "../utils/api";
 
 export default function VerifyEmail() {
 
@@ -21,7 +22,7 @@ export default function VerifyEmail() {
             setMessage("");
 
             const response = await axios.post(
-                "http://localhost:5000/user/verify-otp",
+                `${API_URL}/user/verify-otp`,
                 {
                     email,
                     otp

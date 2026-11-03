@@ -3,6 +3,7 @@ import { toast } from "react-toastify"
 import axios from 'axios'
 import { useNavigate, Link } from "react-router-dom"
 import { UserContext } from "../context/UserProvider";
+import { API_URL } from "../utils/api";
 
 // NEW: design components (put them next to this file, or fix the import paths)
 import AuthLayout from "./AuthLayout";
@@ -38,7 +39,7 @@ function LoginPage(){
         e.preventDefault();
         setLoading(true);
         try{
-            let response=await axios.post("http://localhost:5000/user/login",formData,{
+            let response=await axios.post(`${API_URL}/user/login`,formData,{
                 withCredentials:true
             })
             toast.success(response.data.message)

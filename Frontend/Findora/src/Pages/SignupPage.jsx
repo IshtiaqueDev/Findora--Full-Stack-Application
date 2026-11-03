@@ -7,10 +7,11 @@ import AuthLayout from "./AuthLayout";
 import Field from "./Field";
 import OtpInput from "./OtpInput";
 import { UserIcon, MailIcon, LockIcon, ArrowIcon } from "./Icons";
+import { API_URL } from "../utils/api";
 
 // true  = fake OTP in the browser (the code shows in a toast), so you can test the design now.
 // false = calls your backend routes below. Set it to false once those routes exist.
-const API = "http://localhost:5000/user";
+const API = `${API_URL}/user`;
 const KHP_EMAIL = /^[^\s@]*khp@iba-suk\.edu\.pk$/i; // must end with khp@iba-suk.edu.pk
 const RESEND_SECONDS = 60;
 const mmss = (s) => `0:${String(s).padStart(2, "0")}`;

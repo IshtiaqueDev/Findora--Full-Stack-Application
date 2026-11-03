@@ -1,7 +1,11 @@
 const mongoose=require("mongoose");
 
 async function main(){
-    await mongoose.connect(process.env.MONGO_URL);
+    const mongoUrl = process.env.MONGO_URL || process.env.MONGO_URI;
+    if (!mongoUrl) {
+        throw new Error("MongoDB connection string is not configured");
+    }
+    await mongoose.connect(mongoUrl);
 }
 
 main().then(()=>{

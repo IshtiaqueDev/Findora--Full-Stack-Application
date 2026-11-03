@@ -2,6 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../utils/api";
 
 export const UserContext = createContext();
 
@@ -13,7 +14,7 @@ export const UserProvider = ({ children }) => {
     const getUser = async () => {
         try {
             const response = await axios.get(
-                "http://localhost:5000/user",
+                `${API_URL}/user`,
                 { withCredentials: true }
             );
             setUser(response.data.user);
@@ -38,7 +39,7 @@ export const UserProvider = ({ children }) => {
 
      const handleLogout=async()=>{
         try{
-        let response=await axios.get("http://localhost:5000/user/logout",{
+        let response=await axios.get(`${API_URL}/user/logout`,{
             withCredentials:true
         })  
         setUser(null);

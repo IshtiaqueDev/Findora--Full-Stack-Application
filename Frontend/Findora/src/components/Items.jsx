@@ -3,8 +3,7 @@ import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { UserContext } from "../context/UserProvider";
 import { Link } from "react-router-dom";
-
-const API_URL = "http://localhost:5000";
+import { API_URL } from "../utils/api";
 
 function Items({ type, mine = false, filters, onResultsChange, showMatches = false }) {
     const [items, setItems] = useState([]);

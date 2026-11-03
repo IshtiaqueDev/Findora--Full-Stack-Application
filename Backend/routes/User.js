@@ -72,10 +72,15 @@ router.post("/send-otp", async (req, res) => {
         });
 
     } catch (err) {
-        console.error("SEND_OTP_EMAIL_FAILED:", err.code || "EMAIL_ERROR");
+        const isRegisteredEmail = err.message === "Email is already registered.";
+        console.error(
+            "SEND_OTP_FAILED:",
+            err.code || err.name || "ERROR",
+            err.message || "Unknown error"
+        );
 
-        res.status(500).json({
-            message: err.message === "Email is already registered."
+        res.status(isRegisteredEmail ? 409 : 500).json({
+            message: isRegisteredEmail
                 ? err.message
                 : "Unable to send verification email"
         });

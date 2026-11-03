@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { API_URL } from "../utils/api";
 
 function ItemDetails() {
     const { id } = useParams();
@@ -11,7 +12,7 @@ function ItemDetails() {
 
     useEffect(() => {
         let active = true;
-        axios.get(`http://localhost:5000/item/${id}`, { withCredentials: true })
+        axios.get(`${API_URL}/item/${id}`, { withCredentials: true })
             .then((response) => {
                 if (active) setItem(response.data.item);
             })

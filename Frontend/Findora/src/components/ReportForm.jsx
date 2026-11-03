@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./ReportForm.css"
 import {toast} from "react-toastify"
 import axios from "axios"
+import { API_URL } from "../utils/api";
 
 function ReportForm() {
     const initialFormData = {
@@ -81,7 +82,7 @@ function ReportForm() {
         }
         try {
             const response = await axios.post(
-                "http://localhost:5000/item",
+                `${API_URL}/item`,
                 data,
                 { withCredentials: true }
             );
