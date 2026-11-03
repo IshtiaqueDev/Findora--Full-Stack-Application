@@ -8,8 +8,8 @@ const wrapAsync = require("../utils/wrapAsync");
 const { isLoggedIn, isOwner } = require("../middlewares");
 const { MATCH_THRESHOLD, matchingAlgo } = require("../Alogirthms");
 const { sendMatchFoundEmail, sendClaimEmail } = require("../controllers/SendEmail");
-const { upload } = require("../cloudConfig");
-const cloudinary = require("cloudinary").v2;
+// const { upload } = require("../cloudConfig");
+// const cloudinary = require("cloudinary").v2;
 
 const isValidId = (id) => mongoose.isValidObjectId(id);
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
@@ -83,7 +83,7 @@ router.route("/")
             .sort({ date: -1 });
         res.json({ Items });
     }))
-    .post(isLoggedIn, upload.single("photo"), wrapAsync(async (req, res) => {
+    .post(isLoggedIn, wrapAsync(async (req, res) => {
         const type = String(req.body.type || "").toLowerCase();
         if (!["lost", "found"].includes(type)) {
             return res.status(400).json({ message: "Type must be Lost or Found" });
@@ -114,14 +114,14 @@ router.route("/")
         );
 
         if (isDuplicate) {
-            if (req.file?.filename) {
-                try {
-                    await cloudinary.uploader.destroy(req.file.filename);
-                } catch (error) {
-                    console.error("DUPLICATE_REPORT_IMAGE_CLEANUP_FAILED:", error.code || "CLOUDINARY_ERROR");
-                }
-            }
-            return res.status(409).json({
+        //     if (req.file?.filename) {
+        //         try {
+        //             await cloudinary.uploader.destroy(req.file.filename);
+        //         } catch (error) {
+        //             console.error("DUPLICATE_REPORT_IMAGE_CLEANUP_FAILED:", error.code || "CLOUDINARY_ERROR");
+        //         }
+        //     }
+             return res.status(409).json({
                 message: "You have already posted this item for this date."
             });
         }
