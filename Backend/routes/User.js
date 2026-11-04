@@ -187,13 +187,22 @@ router.post("/signup",
 }))
 
 
-router.get("/logout",isLoggedIn,wrapAsync(async(req,res)=>{
-    req.logout((err)=>{
-    if(err)return next(err)
-    res.json({
-        message:"Logged Out Successfully"
-    })
-    })
-}))
+router.get("/logout", isLoggedIn, (req, res, next) => {
+    req.logout((logoutError) => {
+        if (logoutError) return next(logoutError);
+
+        req.session.destroy((sessionError) => {
+            if (sessionError) return next(sessionError);
+
+            res.clearCookie("connect.sid", {
+                path: "/",
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+            });
+            res.json({ message: "Logged Out Successfully" });
+        });
+    });
+});
 
 module.exports=router;

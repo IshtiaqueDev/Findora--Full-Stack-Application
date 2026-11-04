@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import "./Navbar.css";
 
-// Change these paths to match your routes.
-// If you use react-router, swap each <a href> for <Link to>.
 const links = [
-  { label: "Home", href: "/" },
+  { label: "Home", href: "/home" },
   { label: "Explore Reports", href: "/explore-reports" },
   { label: "Found items", href: "/found" },
   { label: "My reports", href: "/my-reports" },
@@ -19,7 +18,7 @@ function getInitials(name = "") {
 
 function Navbar({ user,onLogout }) {
   const [open, setOpen] = useState(false);
-  const currentPath = window.location.pathname;
+  const { pathname: currentPath } = useLocation();
 
   // Close the menu with Esc, and when the screen gets wide again
   useEffect(() => {
@@ -35,10 +34,10 @@ function Navbar({ user,onLogout }) {
 
   return (
     <header className="site-header">
-      <a href="/" className="brand">
+      <Link to={user ? "/home" : "/"} className="brand">
         <span className="brand-icon">✦</span>
         findora<span className="brand-dot">.</span>
-      </a>
+      </Link>
 
       <button
         type="button"
@@ -57,15 +56,15 @@ function Navbar({ user,onLogout }) {
         aria-label="Main navigation"
       >
         {[...links, ...(user?.role === "admin" ? [{ label: "Admin", href: "/admin" }] : [])].map((link) => (
-          <a
+          <Link
             key={link.href}
-            href={link.href}
+            to={link.href}
             className={currentPath === link.href ? "active" : undefined}
             aria-current={currentPath === link.href ? "page" : undefined}
             onClick={() => setOpen(false)}
           >
             {link.label}
-          </a>
+          </Link>
         ))}
 
         {/* RIGHT-MOST: signed-in user + logout */}
@@ -85,7 +84,7 @@ function Navbar({ user,onLogout }) {
               className="logout-button"
               onClick={() => {
                 setOpen(false);
-                onLogout && onLogout();
+                if (onLogout) onLogout();
               }}
             >
               Log out

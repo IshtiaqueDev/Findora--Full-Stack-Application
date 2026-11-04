@@ -21,7 +21,7 @@ function App() {
     !sessionStorage.getItem("findoraLoaded")
   );
 
-  const{user,handleLogout}=useContext(UserContext);
+  const{user,handleLogout,loading:authLoading,authError,getUser}=useContext(UserContext);
 
   useEffect(()=>{
     if(!showLoader) return;
@@ -35,7 +35,13 @@ function App() {
     }
   },[showLoader])
 
-  if(showLoader) return <Loader/>;  
+  if(showLoader || authLoading) return <Loader/>;
+  if(authError && !user) return (
+    <main role="alert">
+      <p>{authError}</p>
+      <button type="button" onClick={getUser}>Try again</button>
+    </main>
+  );
 
   return (
     <>

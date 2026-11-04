@@ -1,15 +1,23 @@
 
 import { useContext } from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { UserContext } from "../context/UserProvider";
 import Loader from "../components/Loader";
-import HomePage from "../Pages/HomePage";
 
 function ProtectedRoute({children}) {
-    const { user, loading } = useContext(UserContext);
+    const { user, loading, authError, getUser } = useContext(UserContext);
 
     if (loading) {
         return <Loader />;
+    }
+
+    if (authError && !user) {
+        return (
+            <main role="alert">
+                <p>{authError}</p>
+                <button type="button" onClick={getUser}>Try again</button>
+            </main>
+        );
     }
 
     if (!user) {
