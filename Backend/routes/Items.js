@@ -1,5 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const fs = require("fs/promises");
+const path = require("path");
+const crypto = require("crypto");
 const router = express.Router();
 const Item = require("../models/Item");
 const Match = require("../models/Match");
@@ -8,9 +11,17 @@ const wrapAsync = require("../utils/wrapAsync");
 const { isLoggedIn, isOwner } = require("../middlewares");
 const { MATCH_THRESHOLD, matchingAlgo } = require("../Alogirthms");
 const { sendMatchFoundEmail, sendClaimEmail } = require("../controllers/SendEmail");
+const { upload, imageExtensions } = require("../utils/upload");
+const { isAdmin } = require("../middlewares");
+const uploadDirectory = path.join(__dirname, "../uploads");
 
 const isValidId = (id) => mongoose.isValidObjectId(id);
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
+const removeUploadedImage = async (imageUrl) => {
+    if (!imageUrl?.startsWith("/uploads/")) return;
+    const filename = path.basename(imageUrl);
+    await fs.rm(path.join(uploadDirectory, filename), { force: true });
+};
 
 const sendMatchNotification = async (email, lostItem, foundItem, match) => {
     try {
@@ -81,7 +92,7 @@ router.route("/")
             .sort({ date: -1 });
         res.json({ Items });
     }))
-    .post(isLoggedIn, wrapAsync(async (req, res) => {
+    .post(isLoggedIn, upload.single("photo"), wrapAsync(async (req, res) => {
         const type = String(req.body.type || "").toLowerCase();
         if (!["lost", "found"].includes(type)) {
             return res.status(400).json({ message: "Type must be Lost or Found" });
@@ -117,17 +128,33 @@ router.route("/")
             });
         }
 
-        const item = await Item.create({
-            name: req.body.name,
-            description: req.body.description || "",
-            category: req.body.category,
-            color: req.body.color || "",
-            location: req.body.location,
-            type,
-            date: submittedDate,
-            imageUrl: req.file?.path || "",
-            postedBy: req.user._id
-        });
+        let imageUrl = "";
+        let uploadedImagePath;
+        if (req.file) {
+            const filename = `${crypto.randomUUID()}${imageExtensions[req.file.mimetype]}`;
+            uploadedImagePath = path.join(uploadDirectory, filename);
+            await fs.mkdir(uploadDirectory, { recursive: true });
+            await fs.writeFile(uploadedImagePath, req.file.buffer, { flag: "wx" });
+            imageUrl = `/uploads/${filename}`;
+        }
+
+        let item;
+        try {
+            item = await Item.create({
+                name: req.body.name,
+                description: req.body.description || "",
+                category: req.body.category,
+                color: req.body.color || "",
+                location: req.body.location,
+                type,
+                date: submittedDate,
+                imageUrl,
+                postedBy: req.user._id
+            });
+        } catch (error) {
+            if (uploadedImagePath) await fs.unlink(uploadedImagePath);
+            throw error;
+        }
 
         await updateMatches(item);
 
@@ -273,14 +300,136 @@ router.post("/matches/:id/claim", isLoggedIn, wrapAsync(async (req, res) => {
 }));
 
 router.delete("/delete/:id", isLoggedIn, isOwner, wrapAsync(async (req, res) => {
-    await Item.findByIdAndDelete(req.params.id);
+    const item = await Item.findByIdAndDelete(req.params.id);
     await Match.deleteMany({
         $or: [
             { lostItem: req.params.id },
             { foundItem: req.params.id }
         ]
     });
+    await removeUploadedImage(item?.imageUrl);
     res.json({ message: "Deleted Successfully" });
+}));
+
+router.get("/admin/all", isAdmin, wrapAsync(async (req, res) => {
+    const Items = await Item.find()
+        .populate("postedBy", "username email")
+        .sort({ date: -1 });
+    res.json({ Items });
+}));
+
+router.get("/admin/matches", isAdmin, wrapAsync(async (req, res) => {
+    const matches = await Match.find()
+        .populate({
+            path: "lostItem",
+            select: "name category location date type status imageUrl postedBy",
+            populate: { path: "postedBy", select: "username email" }
+        })
+        .populate({
+            path: "foundItem",
+            select: "name category location date type status imageUrl postedBy",
+            populate: { path: "postedBy", select: "username email" }
+        })
+        .populate("claimedBy", "username email")
+        .sort({ createdAt: -1 });
+
+    res.json({
+        matches: matches.filter((match) => match.lostItem && match.foundItem)
+    });
+}));
+
+router.patch("/admin/matches/:id", isAdmin, wrapAsync(async (req, res) => {
+    if (!isValidId(req.params.id)) {
+        return res.status(400).json({ message: "Invalid match ID" });
+    }
+
+    const { action } = req.body;
+    if (!["dismiss", "resolve"].includes(action)) {
+        return res.status(400).json({ message: "Invalid match action" });
+    }
+
+    const match = await Match.findById(req.params.id);
+    if (!match) return res.status(404).json({ message: "Match not found" });
+
+    const expectedStatus = action === "dismiss" ? "open" : "claimed";
+    if (match.status !== expectedStatus) {
+        return res.status(409).json({
+            message: action === "dismiss"
+                ? "Only open matches can be dismissed"
+                : "Only claimed matches can be resolved"
+        });
+    }
+
+    if (action === "resolve") {
+        await Item.updateMany(
+            { _id: { $in: [match.lostItem, match.foundItem] } },
+            { $set: { status: "resolved" } }
+        );
+    }
+
+    const updatedMatch = await Match.findOneAndUpdate(
+        { _id: match._id, status: expectedStatus },
+        { $set: { status: "closed" } },
+        { new: true }
+    );
+    if (!updatedMatch) {
+        return res.status(409).json({ message: "The match was updated by another request" });
+    }
+
+    res.json({
+        message: action === "dismiss" ? "Match dismissed" : "Claim resolved successfully",
+        match: updatedMatch
+    });
+}));
+
+router.patch("/admin/:id/status", isAdmin, wrapAsync(async (req, res) => {
+    if (!isValidId(req.params.id)) {
+        return res.status(400).json({ message: "Invalid item ID" });
+    }
+
+    const { status } = req.body;
+    if (!["active", "resolved"].includes(status)) {
+        return res.status(400).json({ message: "Invalid report status" });
+    }
+
+    const item = await Item.findById(req.params.id);
+    if (!item) return res.status(404).json({ message: "Item not found" });
+
+    item.status = status;
+    await item.save();
+
+    if (status === "resolved") {
+        await Match.updateMany(
+            {
+                $or: [{ lostItem: item._id }, { foundItem: item._id }],
+                status: { $in: ["open", "claimed"] }
+            },
+            { $set: { status: "closed" } }
+        );
+    } else {
+        await updateMatches(item);
+    }
+
+    res.json({ message: "Report status updated", item });
+}));
+
+router.delete("/admin/:id", isAdmin, wrapAsync(async (req, res) => {
+    if (!isValidId(req.params.id)) {
+        return res.status(400).json({ message: "Invalid item ID" });
+    }
+
+    const item = await Item.findByIdAndDelete(req.params.id);
+    if (!item) return res.status(404).json({ message: "Item not found" });
+
+    await Match.deleteMany({
+        $or: [
+            { lostItem: item._id },
+            { foundItem: item._id }
+        ]
+    });
+    await removeUploadedImage(item.imageUrl);
+
+    res.json({ message: "Item deleted successfully" });
 }));
 
 router.put("/update/:id", isLoggedIn, isOwner, wrapAsync(async (req, res) => {

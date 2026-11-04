@@ -16,7 +16,7 @@ function LoginPage(){
 
     useEffect(() => {
     if (user) {
-        navigate("/home", { replace: true });
+        navigate(user.role === "admin" ? "/admin" : "/home", { replace: true });
     }
 }, [user, navigate]);
 
@@ -44,7 +44,7 @@ function LoginPage(){
             })
             toast.success(response.data.message)
             setUser(response.data.user);
-            return navigate("/home");
+            return navigate(response.data.user.role === "admin" ? "/admin" : "/home");
         }catch(err){
               toast.error(
             err.response?.data?.message || err.message

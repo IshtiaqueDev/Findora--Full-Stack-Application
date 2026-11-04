@@ -56,7 +56,7 @@ function Navbar({ user,onLogout }) {
         className={"header-nav" + (open ? " open" : "")}
         aria-label="Main navigation"
       >
-        {links.map((link) => (
+        {[...links, ...(user?.role === "admin" ? [{ label: "Admin", href: "/admin" }] : [])].map((link) => (
           <a
             key={link.href}
             href={link.href}

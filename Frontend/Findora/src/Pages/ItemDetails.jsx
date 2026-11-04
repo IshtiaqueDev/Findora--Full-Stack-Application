@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { API_URL } from "../utils/api";
+import { API_URL, getImageUrl } from "../utils/api";
 
 function ItemDetails() {
     const { id } = useParams();
@@ -47,7 +47,7 @@ function ItemDetails() {
                             <span className="item-category">{item.category}</span>
                         </div>
                         {item.imageUrl && (
-                            <img className="item-photo" src={item.imageUrl} alt={`Photo of ${item.name}`} />
+                            <img className="item-photo" src={getImageUrl(item.imageUrl)} alt={`Photo of ${item.name}`} />
                         )}
                         <div className="item-card-body">
                             <h3>{item.name}</h3>

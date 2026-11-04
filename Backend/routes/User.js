@@ -1,20 +1,25 @@
 const express=require("express");
 const router=express.Router();
+const mongoose=require("mongoose");
 const wrapAsync=require("../utils/wrapAsync");
 const User=require("../models/User");
+const Item=require("../models/Item");
+const Match=require("../models/Match");
 const passport=require("passport");
 const generateOtp=require("../utils/generateOtp");
 const { sendOtpEmail } = require("../controllers/SendEmail");
 const {
     checkUniversityMail,
     isLoggedIn,
+    isAdmin,
     alreadyLoggedIn
 } = require("../middlewares");
 
 const publicUser = (user) => ({
     _id: user._id,
     username: user.username,
-    email: user.email
+    email: user.email,
+    role: user.role
 });
 
 
@@ -48,6 +53,47 @@ router.get("/",wrapAsync(async(req,res)=>{
         user:req.isAuthenticated() ? publicUser(req.user) : null
     })
 }))
+
+router.get("/admin/users", isAdmin, wrapAsync(async (req, res) => {
+    const users = await User.find({
+        $or: [
+            { role: "user" },
+            { role: { $exists: false } }
+        ]
+    })
+        .select("username email role")
+        .sort({ username: 1 });
+    res.json({ users });
+}));
+
+router.delete("/admin/users/:id", isAdmin, wrapAsync(async (req, res) => {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user || user.role === "admin") {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    const itemIds = await Item.find({ postedBy: user._id }).distinct("_id");
+    if (itemIds.length) {
+        await Match.deleteMany({
+            $or: [
+                { lostItem: { $in: itemIds } },
+                { foundItem: { $in: itemIds } }
+            ]
+        });
+        await Item.deleteMany({ _id: { $in: itemIds } });
+    }
+    await Match.updateMany(
+        { claimedBy: user._id },
+        { $set: { claimedBy: null, claimedAt: null } }
+    );
+    await user.deleteOne();
+
+    res.json({ message: "User and their reports deleted successfully" });
+}));
 
 
 const otpStore = new Map();
@@ -134,7 +180,8 @@ router.post("/signup",
         user:{
             _id:req.user._id,
             username:req.user.username,
-            email:req.user.email
+            email:req.user.email,
+            role:req.user.role
         }
     })})
 }))

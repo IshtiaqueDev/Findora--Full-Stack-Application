@@ -22,6 +22,16 @@ const isLoggedIn=(req,res,next)=>{
     next();
 }
 
+const isAdmin=(req,res,next)=>{
+    if(!req.isAuthenticated()){
+        return res.status(401).json({ message:"You are not logged in" });
+    }
+    if(req.user.role !== "admin"){
+        return res.status(403).json({ message:"Admin access required" });
+    }
+    next();
+}
+
 
 const isOwner=async(req,res,next)=>{
     const {id}=req.params;
@@ -54,6 +64,7 @@ const alreadyLoggedIn=(req,res,next)=>{
 module.exports = {
     checkUniversityMail,
     isLoggedIn,
+    isAdmin,
     alreadyLoggedIn,
     isOwner
 };

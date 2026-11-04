@@ -236,6 +236,8 @@ CLOUD_API_SECRET=your_cloudinary_api_secret
 
 The backend accepts `MONGO_URL` or `MONGO_URI` for its MongoDB connection. It uses SMTP for verification, match, and claim emails. For Gmail, use an app password. `SMTP_FROM` is optional, and the existing `USEREMAIL`/`PASSWORD` variables remain supported as SMTP credential aliases. Keep all credentials in `Backend/.env`; never commit real credentials, database passwords, or session secrets.
 
+For local development, the backend bootstraps an `admin` account with username `admin` and password `admin` if no admin account exists. This default is disabled in production; configure `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and optionally `ADMIN_EMAIL` in the production environment before starting the backend. The admin dashboard is available at `/admin` and can manage student accounts, review and resolve reports, and review possible matches.
+
 Start the backend using the script configured in `Backend/package.json`. For example:
 
 ```bash
@@ -251,6 +253,8 @@ cd Frontend
 npm install
 npm run dev
 ```
+
+Set `VITE_API_URL` in `Frontend/Findora/.env` to the backend's base URL (for example, `http://localhost:5000` locally). Configure it to the deployed backend URL when building the production frontend. The backend's `FRONTEND_URL` must match the deployed frontend origin for credentialed admin requests.
 
 If your frontend uses a different development command, follow the script defined in its `package.json`.
 

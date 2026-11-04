@@ -3,7 +3,7 @@ import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { UserContext } from "../context/UserProvider";
 import { Link } from "react-router-dom";
-import { API_URL } from "../utils/api";
+import { API_URL, getImageUrl } from "../utils/api";
 
 function Items({ type, mine = false, filters, onResultsChange, showMatches = false }) {
     const [items, setItems] = useState([]);
@@ -202,7 +202,7 @@ function Items({ type, mine = false, filters, onResultsChange, showMatches = fal
                                 </div>
 
                                 {item.imageUrl && (
-                                    <img className="item-photo" src={item.imageUrl} alt={`Photo of ${item.name}`} loading="lazy" />
+                                    <img className="item-photo" src={getImageUrl(item.imageUrl)} alt={`Photo of ${item.name}`} loading="lazy" />
                                 )}
 
                                 <div className="item-card-body">
