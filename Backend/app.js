@@ -15,6 +15,7 @@ const ItemRoute=require("./routes/Items.js");
 const cors=require("cors");
 const path=require("path");
 const port=Number(process.env.PORT)||5000;
+const isProduction = process.env.NODE_ENV === "production";
 
 const configuredFrontendUrl = process.env.FRONTEND_URL?.replace(/\/+$/, "");
 app.use(cors({
@@ -38,14 +39,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+app.set("trust proxy", 1);
 app.use(session({
     secret:process.env.SESSION_SECRET || "supersecretkeyoflostlinkproject",
     saveUninitialized:true,
     resave:false,
     cookie:{
-        expires:Date.now()+1000*60*60*24*3,
         maxAge:1000*60*60*24*3,
-        httpOnly:true
+        httpOnly:true,
+        secure:isProduction,
+        sameSite:isProduction ? "none" : "lax"
     }
 }))
 

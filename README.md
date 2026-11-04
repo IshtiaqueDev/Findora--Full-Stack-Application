@@ -236,6 +236,8 @@ CLOUD_API_SECRET=your_cloudinary_api_secret
 
 The backend accepts `MONGO_URL` or `MONGO_URI` for its MongoDB connection. It uses SMTP for verification, match, and claim emails. For Gmail, use an app password. `SMTP_FROM` is optional, and the existing `USEREMAIL`/`PASSWORD` variables remain supported as SMTP credential aliases. Keep all credentials in `Backend/.env`; never commit real credentials, database passwords, or session secrets.
 
+For Railway, deploy the `Backend` directory as the service root and use `npm start` as the start command. Set `MONGO_URL`, `SESSION_SECRET`, `FRONTEND_URL` (the exact deployed frontend origin, without a trailing slash), and production admin credentials in Railway's service variables. The backend sets secure cross-site session cookies in production; credentialed API calls require the deployed frontend origin to be allowed by CORS.
+
 For local development, the backend bootstraps an `admin` account with username `admin` and password `admin` if no admin account exists. This default is disabled in production; configure `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and optionally `ADMIN_EMAIL` in the production environment before starting the backend. The admin dashboard is available at `/admin` and can manage student accounts, review and resolve reports, and review possible matches.
 
 Start the backend using the script configured in `Backend/package.json`. For example:

@@ -1,4 +1,4 @@
-const configuredApiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const configuredApiUrl = import.meta.env.VITE_API_URL || "https://findora-full-stack-application-production.up.railway.app";
 
 export const API_URL = configuredApiUrl.replace(/\/+$/, "");
 
