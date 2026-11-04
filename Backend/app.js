@@ -32,6 +32,7 @@ app.use(cors({
             origin === "http://localhost:5000" ||
             origin === "http://localhost:5173" ||
             origin==="https://findora-full-stack-application.vercel.app"||
+            origin==="https://findora-app-dsa.vercel.app" ||
             origin === configuredFrontendUrl ||
             isLocalDevelopmentOrigin;
 
