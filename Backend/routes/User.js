@@ -99,32 +99,59 @@ router.delete("/admin/users/:id", isAdmin, wrapAsync(async (req, res) => {
 const otpStore = new Map();
 router.post("/send-otp", async (req, res) => {
     try {
-        const email = req.body.email.trim().toLowerCase();
-        const user=await User.findOne({email:email});
-        if(user){
-             throw new Error("Email is already registered.");
+        const email = req.body.email?.trim().toLowerCase();
+
+        if (!email) {
+            return res.status(400).json({
+                message: "Email is required"
+            });
         }
+
+        console.log("[OTP] Request received:", email);
+
+        const user = await User.findOne({ email });
+
+        if (user) {
+            return res.status(409).json({
+                message: "Email is already registered."
+            });
+        }
+
         const otp = generateOtp();
 
-        otpStore.set(email, {
-            otp,
-            expiresAt: Date.now() + 60 * 1000
-        });
+        console.log("[OTP] Sending email...");
+
+        const startTime = Date.now();
 
         await sendOtpEmail(email, otp);
 
-        res.json({
+        console.log(
+            `[OTP] Email sent successfully in ${Date.now() - startTime}ms`
+        );
+
+        // Store OTP only after successful email delivery
+        otpStore.set(email, {
+            otp,
+            expiresAt: Date.now() + 5 * 60 * 1000
+        });
+
+        return res.json({
             message: "OTP sent successfully"
         });
 
     } catch (err) {
-        const isRegisteredEmail = err.message === "Email is already registered.";
-        console.error(
-            "SEND_OTP_FAILED:",
-            err.code || err.name || "ERROR",
-            err.message || "Unknown error"
-        );
+        console.error("[OTP] EMAIL FAILED:", {
+            name: err.name,
+            code: err.code,
+            command: err.command,
+            message: err.message
+        });
 
+        return res.status(500).json({
+            message: "Unable to send verification email"
+        });
+    }
+});
         res.status(isRegisteredEmail ? 409 : 500).json({
             message: isRegisteredEmail
                 ? err.message
