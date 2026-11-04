@@ -83,11 +83,20 @@ app.use((err,req,res,next)=>{
     });
 })
 
-const startServer=async()=>{
+const startServer = async () => {
+    console.log("Starting Findora backend...");
+    console.log("NODE_ENV:", process.env.NODE_ENV);
+    console.log("PORT:", process.env.PORT);
+    console.log("Listening port:", port);
+
     await db();
+    console.log("MongoDB initialization completed.");
+
     await ensureAdmin();
-    app.listen(port,"0.0.0.0",()=>{
-        console.log("Server is Listening....");
+    console.log("Admin initialization completed.");
+
+    app.listen(port, "0.0.0.0", () => {
+        console.log(`Findora listening on 0.0.0.0:${port}`);
     });
 };
 
