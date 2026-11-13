@@ -98,8 +98,9 @@ router.delete("/admin/users/:id", isAdmin, wrapAsync(async (req, res) => {
 
 const otpStore = new Map();
 router.post("/send-otp", async (req, res) => {
+    let email;
     try {
-        const email = req.body.email.trim().toLowerCase();
+        email = req.body.email.trim().toLowerCase();
         const user=await User.findOne({email:email});
         if(user){
              throw new Error("Email is already registered.");
@@ -108,7 +109,7 @@ router.post("/send-otp", async (req, res) => {
 
         otpStore.set(email, {
             otp,
-            expiresAt: Date.now() + 60 * 1000
+            expiresAt: Date.now() + 5 * 60 * 1000
         });
 
         await sendOtpEmail(email, otp);
@@ -118,6 +119,7 @@ router.post("/send-otp", async (req, res) => {
         });
 
     } catch (err) {
+        if (email) otpStore.delete(email);
         const isRegisteredEmail = err.message === "Email is already registered.";
         console.error(
             "SEND_OTP_FAILED:",

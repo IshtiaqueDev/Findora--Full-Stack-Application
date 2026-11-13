@@ -256,7 +256,7 @@ npm install
 npm run dev
 ```
 
-The frontend proxies API requests through `/api` in development and production, keeping session cookies first-party in the browser. The Vite proxy targets the Railway backend by default; set `VITE_API_PROXY_TARGET` only when using a different local API target. The Vercel rewrite is in `Frontend/Findora/vercel.json`. Leave `VITE_API_URL` unset (or set it to `/api`) in Vercel; do not point browser requests directly at the Railway domain. The backend's `FRONTEND_URL` must match the deployed frontend origin.
+The frontend proxies API requests through `/api`, keeping session cookies first-party in the browser. During local development, the Vite proxy targets `http://localhost:5000` by default; set `VITE_API_PROXY_TARGET` to use a different backend. The Vercel rewrite in `Frontend/Findora/vercel.json` continues to target the production Railway backend. Leave `VITE_API_URL` unset (or set it to `/api`) in Vercel; do not point browser requests directly at the Railway domain. The backend's `FRONTEND_URL` must match the deployed frontend origin.
 
 If your frontend uses a different development command, follow the script defined in its `package.json`.
 

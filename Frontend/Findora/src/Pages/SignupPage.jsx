@@ -83,7 +83,7 @@ function SignupPage() {
             { email },
             {
                 withCredentials: true,
-                timeout: 20000
+                timeout: 60000
             }
         );
         console.log("OTP response:", res.data);
